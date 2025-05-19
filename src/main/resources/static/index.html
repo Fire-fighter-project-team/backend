@@ -9,35 +9,31 @@
 <form id="vehicleForm">
     <table border="1" cellpadding="5" cellspacing="0">
         <tr>
-            <th>시도</th>
-            <td><input type="text" name="city" required></td>
-            <th>소방서</th>
-            <td><input type="text" name="fireStation" required></td>
+            <th>시도</th><td><input type="text" name="city" required></td>
+            <th>소방서</th><td><input type="text" name="fireStation" required></td>
         </tr>
         <tr>
-            <th>호출명</th>
-            <td><input type="text" name="callSign" required></td>
-            <th>차량 종류</th>
-            <td><input type="text" name="vehicleType" required></td>
+            <th>호출명</th><td><input type="text" name="callSign" required></td>
+            <th>차량 종류</th><td><input type="text" name="vehicleType" required></td>
         </tr>
         <tr>
-            <th>용량(L)</th>
-            <td><input type="number" name="capacity" required></td>
-            <th>인원 수</th>
-            <td><input type="number" name="crewCount" required></td>
+            <th>용량(L)</th><td><input type="number" name="capacity" required></td>
+            <th>인원 수</th><td><input type="number" name="crewCount" required></td>
         </tr>
         <tr>
-            <th>AVL 번호</th>
-            <td><input type="text" name="avlNumber"></td>
-            <th>PS-LTE 번호</th>
-            <td><input type="text" name="psLteNumber"></td>
+            <th>AVL 번호</th><td><input type="text" name="avlNumber"></td>
+            <th>PS-LTE 번호</th><td><input type="text" name="psLteNumber"></td>
         </tr>
-        <tr>
-            <td colspan="4" style="text-align:center;">
-                <button type="submit">차량 등록</button>
-            </td>
-        </tr>
+        <tr><td colspan="4" style="text-align:center;"><button type="submit">차량 등록</button></td></tr>
     </table>
+</form>
+
+<hr>
+
+<h2>📤 차량 Excel 업로드</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx,.csv" required />
+    <button type="submit">엑셀 업로드</button>
 </form>
 
 <hr>
@@ -46,64 +42,46 @@
 <table border="1">
     <thead>
     <tr>
-        <th>ID</th>
-        <th>시도</th>
-        <th>소방서</th>
-        <th>호출명</th>
-        <th>차량 종류</th>
-        <th>용량</th>
-        <th>인원</th>
-        <th>AVL</th>
-        <th>PS-LTE</th>
-        <th>삭제</th>
+        <th>ID</th><th>시도</th><th>소방서</th><th>호출명</th><th>종류</th><th>용량</th>
+        <th>인원</th><th>AVL</th><th>PS-LTE</th><th>삭제</th>
     </tr>
     </thead>
-    <tbody id="vehicleTableBody">
-    </tbody>
+    <tbody id="vehicleTableBody"></tbody>
 </table>
 
 <h3 id="result"></h3>
 
 <script>
     const tableBody = document.getElementById("vehicleTableBody");
-    const resultMessage = document.getElementById("result");
+    const result = document.getElementById("result");
 
     async function loadVehicles() {
         const res = await fetch("http://localhost:8080/api/vehicles/all");
         const vehicles = await res.json();
-
-        tableBody.innerHTML = ""; // 초기화
-
-        vehicles.forEach(vehicle => {
+        tableBody.innerHTML = "";
+        vehicles.forEach(v => {
             const row = document.createElement("tr");
-
             row.innerHTML = `
-                <td>${vehicle.vehicleId}</td>
-                <td>${vehicle.city}</td>
-                <td>${vehicle.fireStation}</td>
-                <td>${vehicle.callSign}</td>
-                <td>${vehicle.vehicleType}</td>
-                <td>${vehicle.capacity}</td>
-                <td>${vehicle.crewCount}</td>
-                <td>${vehicle.avlNumber}</td>
-                <td>${vehicle.psLteNumber}</td>
-                <td><button onclick="deleteVehicle(${vehicle.vehicleId})">삭제</button></td>
+                <td>${v.vehicleId}</td>
+                <td>${v.city}</td>
+                <td>${v.fireStation}</td>
+                <td>${v.callSign}</td>
+                <td>${v.vehicleType}</td>
+                <td>${v.capacity}</td>
+                <td>${v.crewCount}</td>
+                <td>${v.avlNumber}</td>
+                <td>${v.psLteNumber}</td>
+                <td><button onclick="deleteVehicle(${v.vehicleId})">삭제</button></td>
             `;
-
             tableBody.appendChild(row);
         });
     }
 
     async function deleteVehicle(id) {
-        const response = await fetch(`http://localhost:8080/api/vehicles/${id}`, {
-            method: "DELETE"
-        });
-
-        if (response.ok) {
-            resultMessage.innerText = `🗑️ 차량 ${id} 삭제 완료`;
-            loadVehicles(); // 목록 새로고침
-        } else {
-            resultMessage.innerText = `❌ 삭제 실패`;
+        const res = await fetch(`http://localhost:8080/api/vehicles/${id}`, { method: "DELETE" });
+        if (res.ok) {
+            result.innerText = `🗑️ 삭제 완료 (ID: ${id})`;
+            loadVehicles();
         }
     }
 
@@ -121,25 +99,32 @@
             psLteNumber: form.psLteNumber.value
         };
 
-        const response = await fetch("http://localhost:8080/api/vehicles/register", {
+        const res = await fetch("http://localhost:8080/api/vehicles/register", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
-        const result = await response.json();
-        if (response.ok) {
-            resultMessage.innerText = `✅ 등록 성공! 차량 ID: ${result.vehicleId}`;
+        const resultData = await res.json();
+        if (res.ok) {
+            result.innerText = `✅ 등록 성공 (ID: ${resultData.vehicleId})`;
             form.reset();
-            loadVehicles(); // 등록 후 목록 새로고침
-        } else {
-            resultMessage.innerText = `❌ 등록 실패`;
+            loadVehicles();
         }
     });
 
-    // 페이지 로드 시 목록 불러오기
+    document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const res = await fetch("http://localhost:8080/api/vehicles/upload", {
+            method: "POST",
+            body: formData
+        });
+        const msg = await res.text();
+        result.innerText = msg;
+        loadVehicles();
+    });
+
     window.onload = loadVehicles;
 </script>
 </body>

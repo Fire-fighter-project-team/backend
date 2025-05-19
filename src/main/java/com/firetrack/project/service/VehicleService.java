@@ -8,7 +8,10 @@ import com.firetrack.project.repository.StationRepository;
 import com.firetrack.project.repository.VehicleRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.apache.poi.ss.usermodel.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -93,5 +96,36 @@ public class VehicleService {
         jdbcTemplate.execute("PREPARE stmt FROM @sql");
         jdbcTemplate.execute("EXECUTE stmt");
         jdbcTemplate.execute("DEALLOCATE PREPARE stmt");
+    }
+
+    public void importFromExcel(MultipartFile file) throws Exception {
+        try (InputStream is = file.getInputStream(); Workbook workbook = WorkbookFactory.create(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue;
+
+                String city = row.getCell(0).getStringCellValue();
+                String fireStation = row.getCell(1).getStringCellValue();
+                String callSign = row.getCell(2).getStringCellValue();
+                String vehicleType = row.getCell(3).getStringCellValue();
+                int capacity = (int) row.getCell(4).getNumericCellValue();
+                int crewCount = (int) row.getCell(5).getNumericCellValue();
+                String avl = row.getCell(6).getStringCellValue();
+                String ps = row.getCell(7).getStringCellValue();
+
+                VehicleDto dto = VehicleDto.builder()
+                        .city(city)
+                        .fireStation(fireStation)
+                        .callSign(callSign)
+                        .vehicleType(vehicleType)
+                        .capacity(capacity)
+                        .crewCount(crewCount)
+                        .avlNumber(avl)
+                        .psLteNumber(ps)
+                        .build();
+
+                registerVehicle(dto);
+            }
+        }
     }
 }
