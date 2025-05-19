@@ -47,3 +47,25 @@
 - 컬럼 순서 고정
 - 모든 필드는 필수
 - 최대 1개의 시트만 처리
+
+---
+
+📁 프로젝트 구조
+```arduino
+com.firetrack.project
+├── controller
+│   └── VehicleController.java
+├── service
+│   └── VehicleService.java
+├── dto
+│   ├── VehicleDto.java
+│   └── VehicleResponseDto.java
+├── entity
+│   ├── Vehicle.java
+│   └── Station.java
+├── repository
+│   ├── VehicleRepository.java
+│   └── StationRepository.java
+└── resources
+    └── static/index.html
+```
