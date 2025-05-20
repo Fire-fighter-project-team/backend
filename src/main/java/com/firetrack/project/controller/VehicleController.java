@@ -53,4 +53,6 @@ public class VehicleController {
             return ResponseEntity.badRequest().body("❌ 업로드 실패: " + e.getMessage());
         }
     }
+
+
 }
