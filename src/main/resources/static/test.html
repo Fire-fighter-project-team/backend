@@ -81,7 +81,7 @@
         const res = await fetch(`http://localhost:8080/api/vehicles/${id}`, { method: "DELETE" });
         if (res.ok) {
             result.innerText = `🗑️ 삭제 완료 (ID: ${id})`;
-            loadVehicles();
+            await loadVehicles();
         }
     }
 
@@ -109,7 +109,7 @@
         if (res.ok) {
             result.innerText = `✅ 등록 성공 (ID: ${resultData.vehicleId})`;
             form.reset();
-            loadVehicles();
+            await loadVehicles();
         }
     });
 
@@ -120,9 +120,8 @@
             method: "POST",
             body: formData
         });
-        const msg = await res.text();
-        result.innerText = msg;
-        loadVehicles();
+        result.innerText = await res.text();
+        await loadVehicles();
     });
 
     window.onload = loadVehicles;
